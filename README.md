@@ -7,7 +7,7 @@ https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1
 Tuto notebook :
 https://colab.research.google.com/drive/11S9gZqGz1VIugw-YJCsJmyAhecbDNHNM#scrollTo=WBWkBQkeIfWN
 
-My notebook solution : 
+My notebook solution `<|im_start|> / <|im_end|>` : 
 [OLD](https://colab.research.google.com/drive/1yjNgzQqW48_A9pcppVPOl70LFK_8KnEt?authuser=1#scrollTo=UHDKEHrSMWpV)
 [NEW QWEN 1.5B GGUF](https://colab.research.google.com/drive/1mL0htJXRWE_n-d57aLsE0NyvNUo1xP6o?authuser=4#scrollTo=dZXQSgGQUD6n)
 
