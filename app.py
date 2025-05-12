@@ -1,12 +1,12 @@
 import os
 from huggingface_hub import hf_hub_download
-
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from llama_cpp import Llama
 
 app = Flask(__name__)
 
 
+global LLM_INSTANCE
 
 MODEL_LOADED = False
 LLM_INSTANCE = None
@@ -19,13 +19,11 @@ def load_model():
 
     print("Checking if model is already downloaded...")
     try:
-        # Define target path and model file name
         target_dir = os.path.expanduser("./models")
         os.makedirs(target_dir, exist_ok=True)
         model_filename = "qwen2_5_1.5B_instruct_finetuned_fr.q8_0.gguf"
         model_path = os.path.join(target_dir, model_filename)
 
-        # Check if model already exists
         if os.path.exists(model_path):
             GGUF_PATH = model_path
             print(f"Model already exists at: {GGUF_PATH}")
@@ -39,14 +37,14 @@ def load_model():
             )
             print(f"Model downloaded to: {GGUF_PATH}")
 
-        # Load the model
         LLM_INSTANCE = Llama(
-            model_path=model_path,
-            # n_gpu_layers=-1, # Uncomment to use GPU acceleration
-            # seed=1337, # Uncomment to set a specific seed
-            # n_ctx=2048, # Uncomment to increase the context window
-        )
+            model_path=GGUF_PATH,
+            # n_gpu_layers=-1,  # Optional: Uncomment to use GPU acceleration
+            # seed=1337,
+            # n_ctx=2048,
+            n_threads=2,  # Use all CPU cores
 
+        )
         MODEL_LOADED = True
         print("Model loaded successfully.")
 
@@ -54,81 +52,88 @@ def load_model():
         print(f"Error loading model: {e}")
 
 
-load_model()
-
-global model_path
-global response1
-
 @app.route('/generate_question')
 def generate_question():
-    output = LLM_INSTANCE("""**Instruction :**
-    À partir *uniquement* du texte fourni, génère une seule question pertinente en français.
-    Ne dépasse pas une seule question. N’ajoute aucun commentaire ni explication.
+    if LLM_INSTANCE is None:
+        print("Model not loaded - Loading in progress...")
+        load_model()
+    
+    prompt = """<|im_start|>system
+You are an expert question-generation assistant.  
+When the user gives you a block of text, you must:  
+1. Generate exactly one relevant question in French based solely on the provided text.  
+2. Never add any comments, explanations, or additional questions.  
+3. Use the exact output format:
 
-    Le format de sortie doit être strictement le suivant :
-    **Question :** \[question générée]
+**Question :** [votre question]
 
-    **Texte :**
-    La plage et la montagne offrent des paysages contrastés. Sur la plage, il y a du sable doré, des vagues qui déferlent et des parasols colorés. Tandis qu'à la montagne, l'air est frais, les cimes sont enneigées et les sentiers sinueux.
-    **Question :**""", max_tokens=200, stream=True)
+Always follow this layout strictly, with no extra lines or sections.
+<|im_end|>
+<|im_start|>user
+**Instruction :**
+À partir *uniquement* du texte fourni, génère une seule question pertinente en français.  
+Ne dépasse pas une seule question. N’ajoute aucun commentaire ni explication.
 
-    # print(output["choices"][0]["text"])
+Le format de sortie doit être strictement le suivant :  
+**Question :** [question générée]
 
-    response1 = ""
+**Texte :**
+La plage et la montagne offrent des paysages contrastés. Sur la plage, il y a du sable doré, des vagues qui déferlent et des parasols colorés. Tandis qu'à la montagne, l'air est frais, les cimes sont enneigées et les sentiers sinueux.
+<|im_end|>
+<|im_start|>assistant
+"""
 
+    output = LLM_INSTANCE(prompt, max_tokens=200, stream=True)
+
+    full_response = ""
     for chunk in output:
+        full_response += chunk["choices"][0]["text"]
         print(chunk["choices"][0]["text"], end="", flush=True)
-        response1 += chunk["choices"][0]["text"]
 
-    return response1   
-
-
+    return full_response
 
 @app.route('/correct_answer')
 def correct_answer():
-    text = """
-    La plage et la montagne offrent des paysages contrastés. Sur la plage, il y a du sable doré, des vagues qui déferlent et des parasols colorés. Tandis qu'à la montagne, l'air est frais, les cimes sont enneigées et les sentiers sinueux.
-    """
+    if LLM_INSTANCE is None:
+        print("Model not loaded - Loading in progress...")
+        load_model()
 
-    reponse = "Les paysages de la plage sont typiques avec des plages vert."
+    # This should ideally come from the generated question, but for now it's hardcoded
+    texte = """La plage et la montagne offrent des paysages contrastés. 
+    Sur la plage, il y a du sable doré, des vagues qui déferlent et des parasols colorés. 
+    Tandis qu'à la montagne, l'air est frais, les cimes sont enneigées et les sentiers sinueux."""
 
-    if reponse == "":
-        reponse = "l'eleve ne repond pas ! "
+    reponse_eleve = "Les paysages de la plage sont typiques avec des plages vert."
+    if not reponse_eleve.strip():
+        reponse_eleve = "L’élève ne répond pas !"
 
-   
+    prompt = f"""<|im_start|>system
+You are an expert error-correction assistant.  
+When the user gives you an original text and a student’s answer, you must:
+1. Assign a score out of 10 and display it as  
+   Note : X/10  
+2. Point out the single most important mistake in one sentence prefixed with  
+   Erreur :  
+3. Provide the corrected statement prefixed with  
+   Correction :  
 
-    # Run inference
-    output = LLM_INSTANCE(f"""<|im_start|>system
-    Tu es un professeur de français expérimenté. Ton rôle est d’évaluer les réponses des élèves en te basant sur la correction orthographique, la justesse du contenu, la pertinence de la réponse, ainsi que la qualité de l’expression écrite. Sois précis, pédagogique et objectif dans tes corrections.<|im_end|>
-    <|im_start|>user
-    Corrige la réponse de l'élève uniquement à partir du texte fourni.
+Always follow this exact layout, with no extra lines or sections.
+<|im_end|>
+<|im_start|>user
+Voici le texte original : {texte}. 
+Réponse de l’étudiant : {reponse_eleve}.
+<|im_end|>
+<|im_start|>assistant
+"""
 
-    Évalue la réponse en termes de justesse et de pertinence.
+    output = LLM_INSTANCE(prompt, max_tokens=300, stream=True)
 
-    Indique ensuite ce qui est incorrect, puis donne la version corrigée.
-
-    Ne répète pas le texte fourni.
-
-    Arrête-toi directement après la correction.
-
-    Le format de sortie doit être :
-
-    Note : ?/10
-    Erreur : Ce qui est incorrect dans la réponse
-    Correction : Réponse corrigée
-
-    Texte : {response1}
-    Réponse de l’élève : {reponse}<|im_end|>
-    <|im_start|>assistant
-    """, max_tokens=300, stream=True)
-    # print(output["choices"][0]["text"])
-    response2 = ""
+    full_response = ""
     for chunk in output:
+        full_response += chunk["choices"][0]["text"]
         print(chunk["choices"][0]["text"], end="", flush=True)
-        response2 += chunk["choices"][0]["text"]
 
-    return response2
-
+    return full_response
 
 if __name__ == '__main__':
     app.run(debug=True)
