@@ -43,7 +43,9 @@ if st.button("Generate Question"):
             result = response.json()
 
             st.subheader("Generated Question:")
-            st.write(result.get("question", "No question found."))
+            generated_question = result.get("question", "No question found.")
+            st.write(generated_question)
+            st.session_state.generated_question_for_eval = generated_question
             
             st.subheader("Raw Response:")
             st.code(result.get("raw", "No raw response found."))
@@ -58,9 +60,13 @@ if st.button("Generate Question"):
         st.warning("Please enter some text to generate a question.")
 
 st.subheader("Evaluate Student Answer")
+# Initialize session state for generated question if not already present
+if 'generated_question_for_eval' not in st.session_state:
+    st.session_state.generated_question_for_eval = "Où Salma fait-elle ses devoirs?" # Default value
+
 evaluation_question = st.text_input(
     "Enter the question:",
-    "Où Salma fait-elle ses devoirs?",
+    value=st.session_state.generated_question_for_eval,
     key="evaluation_question"
 )
 student_answer = st.text_input(
