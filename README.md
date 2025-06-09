@@ -13,6 +13,7 @@ Ce projet présente un système robuste basé sur l'IA, conçu pour générer de
 ## ✨ Fonctionnalités
 
 *   **Intégration LLM Locale :** Utilise un Grand Modèle de Langage local au format GGUF pour la génération de questions, garantissant la confidentialité et la capacité hors ligne.
+    *   **Modèle Utilisé :** QWEN 2.5 0.5B fine-tuned ([Hugging Face](https://huggingface.co/zinec/finetuned-qwen2.5-0.5B)) <img src="screenshots/qwen.png" alt="Qwen Icon" width="20"/>
 *   **Deux Interfaces Utilisateur :**
     *   **Application Streamlit :** Une interface web simple et interactive pour la saisie rapide de texte et la génération de questions.
     *   **Application Web Flask :** Une application web plus complète avec un frontend dédié (`index.html`) et un backend pour la génération et le stockage des questions.

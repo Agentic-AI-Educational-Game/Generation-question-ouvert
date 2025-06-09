@@ -11,6 +11,7 @@ This project presents a robust AI-powered system designed to generate open-ended
 ## ✨ Features
 
 *   **Local LLM Integration:** Utilizes a local GGUF-formatted Large Language Model for question generation, ensuring privacy and offline capability.
+    *   **Model Used:** QWEN 2.5 0.5B fine-tuned ([Hugging Face](https://huggingface.co/zinec/finetuned-qwen2.5-0.5B)) <img src="screenshots/qwen.png" alt="Qwen Icon" width="20"/>
 *   **Dual User Interfaces:**
     *   **Streamlit App:** A simple, interactive web interface for quick text input and question generation.
     *   **Flask Web App:** A more comprehensive web application with a dedicated frontend (`index.html`) and backend for question generation and storage.
