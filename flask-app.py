@@ -60,17 +60,25 @@ def generate_question():
 
             # Save to MongoDB
             try:
-                questions_collection.insert_one({
+                timestamp = datetime.utcnow()
+                result = questions_collection.insert_one({
                     "input_text": input_text,
                     "question": question_text,
-                    "timestamp": datetime.utcnow()
+                    "timestamp": timestamp
                 })
                 print("DEBUG: Data saved to MongoDB successfully.")
+                
+                # Prepare the response with the desired format
+                response_data = {
+                    "_id": str(result.inserted_id), # Convert ObjectId to string
+                    "input_text": input_text,
+                    "question": question_text,
+                    "timestamp": timestamp.isoformat() + "Z" # ISO 8601 format with 'Z' for UTC
+                }
+                return jsonify(response_data)
             except Exception as mongo_e:
                 print(f"ERROR: Failed to save to MongoDB: {mongo_e}")
-                # Optionally, you might want to return an error to the client or log it more prominently
-                
-            return jsonify({"question": question_text}) # Return with lowercase "question" for consistency
+                return jsonify({"error": f"Failed to save question: {mongo_e}"}), 500
         else:
             return jsonify({"error": "Generated question not found in response."}), 500
     except json.JSONDecodeError:
