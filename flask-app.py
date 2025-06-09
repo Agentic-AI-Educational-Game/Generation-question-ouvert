@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import os
 import json # Import the json module
+import re # Import the re module for regex
 from generator import generate_and_parse_question # Import the new function
 from pymongo import MongoClient
 from datetime import datetime
@@ -27,8 +28,12 @@ def index():
 
 @app.route('/generate_question', methods=['POST'])
 def generate_question():
-    input_text = request.form.get('text') # Get main text input
-    focus_text = request.form.get('focus_text', '') # Get optional focus text input
+    data = request.get_json() # Get JSON data
+    if not data:
+        return jsonify({"error": "Invalid JSON or missing data."}), 400
+    
+    input_text = data.get('text') # Get main text input
+    focus_text = data.get('focus_text', '') # Get optional focus text input
 
     if not input_text:
         return jsonify({"error": "Text input is required."}), 400
@@ -49,6 +54,10 @@ def generate_question():
         elif "Question" in parsed_data: # Changed to "Question" (capital Q)
             question_text = parsed_data["Question"]
             
+            # Clean the question text using regex
+            # This removes "Question : \n" or "Question:\n" or "Question: " or "Question : " from the beginning
+            question_text = re.sub(r"^[Qq]uestion\s*:\s*\n*", "", question_text).strip()
+
             # Save to MongoDB
             try:
                 questions_collection.insert_one({
