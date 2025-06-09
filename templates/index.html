@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Question Generator</title>
+    <title>Générateur de Questions</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -66,18 +66,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>AI Question Generator</h1>
+        <h1>Générateur de Questions par IA</h1>
         <form id="questionForm">
-            <label for="text">Input Text:</label>
-            <textarea id="text" name="text" rows="8" placeholder="Enter the text from which to generate a question." required></textarea>
+            <label for="text">Texte d'entrée :</label>
+            <textarea id="text" name="text" rows="8" placeholder="Entrez le texte à partir duquel générer une question." required></textarea>
 
-            <label for="focus_text">Part of Text to Focus On (Optional):</label>
-            <textarea id="focus_text" name="focus_text" rows="2" placeholder="e.g., 'hydrogène et d'hélium' to focus on specific elements."></textarea>
+            <label for="focus_text">Partie du texte sur laquelle se concentrer (Facultatif) :</label>
+            <textarea id="focus_text" name="focus_text" rows="2" placeholder="par exemple, 'hydrogène et d'hélium' pour se concentrer sur des éléments spécifiques."></textarea>
 
-            <button type="submit">Generate Question</button>
+            <button type="submit">Générer la question</button>
         </form>
         <div id="result">
-            <p>Generated Question will appear here...</p>
+            <p>La question générée apparaîtra ici...</p>
         </div>
         <div id="error" class="error"></div>
     </div>
@@ -91,7 +91,7 @@
             const resultDiv = document.getElementById('result');
             const errorDiv = document.getElementById('error');
 
-            resultDiv.innerHTML = '<p>Generating...</p>';
+            resultDiv.innerHTML = '<p>Génération en cours...</p>';
             errorDiv.textContent = '';
 
             try {
@@ -111,20 +111,20 @@
                 if (response.ok) {
                     if (data.error) {
                         errorDiv.textContent = `Error: ${data.error}`;
-                        resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+                        resultDiv.innerHTML = '<p>La question générée apparaîtra ici...</p>';
                     } else if (data.question) {
-                        resultDiv.innerHTML = `<p><strong>Generated Question:</strong></p><p>${data.question}</p>`;
+                        resultDiv.innerHTML = `<p><strong>Question générée :</strong></p><p>${data.question}</p>`;
                     } else {
-                        errorDiv.textContent = `Error: Unexpected response format.`;
-                        resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+                        errorDiv.textContent = `Erreur : Format de réponse inattendu.`;
+                        resultDiv.innerHTML = '<p>La question générée apparaîtra ici...</p>';
                     }
                 } else {
-                    errorDiv.textContent = `Error: ${data.error || 'Something went wrong.'}`;
-                    resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+                    errorDiv.textContent = `Erreur : ${data.error || 'Quelque chose s\'est mal passé.'}`;
+                    resultDiv.innerHTML = '<p>La question générée apparaîtra ici...</p>';
                 }
             } catch (e) {
-                errorDiv.textContent = `Network error: ${e.message}`;
-                resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+                errorDiv.textContent = `Erreur réseau : ${e.message}`;
+                resultDiv.innerHTML = '<p>La question générée apparaîtra ici...</p>';
             }
         });
     </script>
