@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+            white-space: pre-wrap; /* Preserve whitespace and line breaks */
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Question Generator</h1>
+        <form id="questionForm">
+            <label for="text">Input Text:</label>
+            <textarea id="text" name="text" rows="8" placeholder="Enter the text from which to generate a question." required></textarea>
+
+            <label for="focus_text">Part of Text to Focus On (Optional):</label>
+            <textarea id="focus_text" name="focus_text" rows="2" placeholder="e.g., 'hydrogène et d'hélium' to focus on specific elements."></textarea>
+
+            <button type="submit">Generate Question</button>
+        </form>
+        <div id="result">
+            <p>Generated Question will appear here...</p>
+        </div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        document.getElementById('questionForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const inputText = document.getElementById('text').value;
+            const focusText = document.getElementById('focus_text').value; // Get focus text
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+
+            resultDiv.innerHTML = '<p>Generating...</p>';
+            errorDiv.textContent = '';
+
+            try {
+                const formData = new FormData();
+                formData.append('text', inputText);
+                if (focusText) { // Only append if not empty
+                    formData.append('focus_text', focusText);
+                }
+
+                const response = await fetch('/generate_question', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.error) {
+                        errorDiv.textContent = `Error: ${data.error}`;
+                        resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+                    } else if (data.question) {
+                        resultDiv.innerHTML = `<p><strong>Generated Question:</strong></p><p>${data.question}</p>`;
+                    } else {
+                        errorDiv.textContent = `Error: Unexpected response format.`;
+                        resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+                    }
+                } else {
+                    errorDiv.textContent = `Error: ${data.error || 'Something went wrong.'}`;
+                    resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+                }
+            } catch (e) {
+                errorDiv.textContent = `Network error: ${e.message}`;
+                resultDiv.innerHTML = '<p>Generated Question will appear here...</p>';
+            }
+        });
+    </script>
+</body>
+</html>
