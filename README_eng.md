@@ -6,7 +6,7 @@
 
 This project presents a robust AI-powered system designed to generate open-ended questions in French from provided text, leveraging a local Large Language Model (LLM). It offers dual interfaces for flexibility: a user-friendly Streamlit application for rapid prototyping and testing, and a Flask web application integrated with MongoDB for persistent storage and a more traditional web experience. The system is capable of focusing question generation on specific parts of the input text, making it highly adaptable for various educational or analytical purposes.
 
-![Arch](screenshots/gen-question.png)
+![Arch](screenshots/arch.png)
 
 ## ✨ Features
 

@@ -8,7 +8,7 @@
 
 Ce projet présente un système robuste basé sur l'IA, conçu pour générer des questions ouvertes en français à partir d'un texte fourni, en tirant parti d'un Grand Modèle de Langage (LLM) local. Il offre deux interfaces pour une flexibilité accrue : une application Streamlit conviviale pour le prototypage rapide et les tests, et une application web Flask intégrée à MongoDB pour un stockage persistant et une expérience web plus traditionnelle. Le système est capable de concentrer la génération de questions sur des parties spécifiques du texte d'entrée, ce qui le rend très adaptable à diverses fins éducatives ou analytiques.
 
-![Arch](screenshots/gen-question.png)
+![Arch](screenshots/arch.png)
 
 ## ✨ Fonctionnalités
 
